@@ -60,6 +60,25 @@ const handleRequest = async (request, env, ctx) => {
   }
   resp.headers.delete('age');
   resp.headers.delete('x-robots-tag');
+
+  // FPID
+
+  const cookieHeader = request.headers.get('Cookie'); // Check request headers for existing cookies
+
+  if (!cookieHeader || !cookieHeader.includes('fpid=')) {
+    // Generate new UUID v4 if fpid cookie is not present in the request
+    const { v4: uuidv4 } = require('uuid');
+    const newFpid = uuidv4();
+
+    // Set the new fpid cookie with an expiration time (e.g., 1 year)
+    const expirationDate = new Date();
+    expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+    const expires = expirationDate.toUTCString();
+
+    resp = new Response(resp.body, resp);
+    resp.headers.append('Set-Cookie', `fpid=${newFpid}; Expires=${expires}; Path=/; HttpOnly`);
+  }
+
   return resp;
 };
 
