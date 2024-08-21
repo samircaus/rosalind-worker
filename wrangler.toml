@@ -1,0 +1,16 @@
+name = "rosalind"
+main = "src/index.ts"
+compatibility_date = "2023-05-24"
+usage_model = "standard"
+env = { }
+
+[route]
+pattern = "*.scaus.art/*"
+zone_name = ""
+script = "rosalind"
+
+[triggers]
+crons = [ ]
+
+[vars]
+ORIGIN_HOSTNAME = "main--rosalind--samircaus.hlx.live"
