@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2023-05-24"
 env = { }
 
-route = { pattern = "*.scaus.art/*", zone_name = "scaus.art" }
+route = { pattern = "www.scaus.art/*", zone_name = "scaus.art" }
 
 [triggers]
 crons = [ ]

@@ -1,16 +1,9 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
+import { v4 as uuidv4 } from 'uuid';
+const { createAepEdgeClient, getAepEdgeClusterCookie, getDebugSessionCookie, getAepEdgeCookies, requestAepEdgePersonalization } = require("./aepEdgeClient");
 'use strict';
+
+const ORGANIZATION_ID = 'B504732B5D3B2A790A495ECF'
+const DATASTREAM_ID = '365421b1-28f4-47d5-b1ed-aeae2984e595'
 
 const handleRequest = async (request, env, ctx) => {
   const url = new URL(request.url);
@@ -67,7 +60,6 @@ const handleRequest = async (request, env, ctx) => {
 
   if (!cookieHeader || !cookieHeader.includes('fpid=')) {
     // Generate new UUID v4 if fpid cookie is not present in the request
-    const { v4: uuidv4 } = require('uuid');
     const newFpid = uuidv4();
 
     // Set the new fpid cookie with an expiration time (e.g., 1 year)
@@ -79,8 +71,35 @@ const handleRequest = async (request, env, ctx) => {
     resp.headers.append('Set-Cookie', `fpid=${newFpid}; Expires=${expires}; Path=/; HttpOnly`);
   }
 
+  await hybridPersonalization(req, resp)
+
   return resp;
 };
+
+const hybridPersonalization = async (req, resp) => {
+  // measure how much this impacts total processing time
+  // move request upfront in parallel await Promise.allSettled(hybrid / cac)
+  // make request on configured pages only?
+  // refactor from commonjs
+
+  const aepEdgeClient = createAepEdgeClient(
+    DATASTREAM_ID,
+    getAepEdgeClusterCookie(ORGANIZATION_ID, req),
+    undefined,
+    getDebugSessionCookie(ORGANIZATION_ID, req)
+  );
+
+  const aepEdgeCookies = getAepEdgeCookies(req);
+
+  const aepEdgeResult = await requestAepEdgePersonalization(
+    aepEdgeClient,
+    req,
+    [],
+    {},
+    aepEdgeCookies,
+    [])
+
+}
 
 export default {
   fetch: handleRequest,

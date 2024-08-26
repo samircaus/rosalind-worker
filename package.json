@@ -8,9 +8,10 @@
     "start": "wrangler dev"
   },
   "devDependencies": {
-    "wrangler": "^3.60.3"
+    "wrangler": "^3.72.2"
   },
   "dependencies": {
+    "cookie": "^0.6.0",
     "uuid": "^10.0.0"
   }
 }
