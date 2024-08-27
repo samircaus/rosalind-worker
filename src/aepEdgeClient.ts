@@ -41,9 +41,6 @@ const SCHEMAS_PERSONALIZATION = [
     "https://ns.adobe.com/personalization/html-content-item",
     "https://ns.adobe.com/personalization/json-content-item",
     "https://ns.adobe.com/personalization/redirect-item",
-    "https://ns.adobe.com/personalization/ruleset-item",
-    "https://ns.adobe.com/personalization/message/in-app",
-    "https://ns.adobe.com/personalization/message/content-card",
     "https://ns.adobe.com/personalization/dom-action"
 ];
 
@@ -304,7 +301,7 @@ function getAepEdgeCookies(req) {
     const cookie = parse(req.headers.get("Cookie") || "");
     Object.keys(cookie)
         .filter((key) => key.startsWith(AEP_COOKIE_PREFIX)).forEach(
-            (k) => { console.log(k); entries.push({k:cookie[k]})})
+            (k) => { entries.push({ key: k, value: cookie[k] }) })
 
     console.log(entries)
     return entries;
@@ -335,8 +332,9 @@ function requestAepEdgePersonalization(
         },
         meta: {
             state: {
-                domain: req.headers.host,
-                cookiesEnabled: false
+                domain: "scaus.art",
+                cookiesEnabled: true,
+                entries: cookieEntries
             },
         },
         requestHeaders: {

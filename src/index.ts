@@ -3,7 +3,7 @@ const { createAepEdgeClient, getAepEdgeClusterCookie, getDebugSessionCookie, get
 'use strict';
 
 const ORGANIZATION_ID = 'B504732B5D3B2A790A495ECF'
-const DATASTREAM_ID = '365421b1-28f4-47d5-b1ed-aeae2984e595'
+const DATASTREAM_ID = '96f1c7b0-9607-404a-a6c3-a1e71445a99f'
 
 const handleRequest = async (request, env, ctx) => {
   const url = new URL(request.url);
@@ -57,7 +57,7 @@ const handleRequest = async (request, env, ctx) => {
   // FPID
 
   const cookieHeader = request.headers.get('Cookie'); // Check request headers for existing cookies
-
+  
   if (!cookieHeader || !cookieHeader.includes('fpid=')) {
     // Generate new UUID v4 if fpid cookie is not present in the request
     const newFpid = uuidv4();
@@ -91,11 +91,13 @@ const hybridPersonalization = async (req, resp) => {
 
   const aepEdgeCookies = getAepEdgeCookies(req);
 
+  const identityMap = {}
+
   const aepEdgeResult = await requestAepEdgePersonalization(
     aepEdgeClient,
     req,
     [],
-    {},
+    identityMap,
     aepEdgeCookies,
     [])
 
