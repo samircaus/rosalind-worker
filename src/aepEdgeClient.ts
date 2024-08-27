@@ -204,7 +204,7 @@ function createAepEdgeClient(
 
     function getPropositions({
         decisionScopes = [PAGE_WIDE_SCOPE],
-        surfaces = ["web://www.scaus.art/"], //todo implement
+        surfaces = [], 
         xdm = {},
         data = {},
         meta = {},
@@ -332,7 +332,7 @@ function requestAepEdgePersonalization(
         },
         meta: {
             state: {
-                domain: "scaus.art",
+                domain: "",
                 cookiesEnabled: true,
                 entries: cookieEntries
             },
