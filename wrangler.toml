@@ -12,3 +12,5 @@ crons = [ ]
 ORIGIN_HOSTNAME = "main--rosalind--samircaus.hlx.live"
 FPID_NAME = "fpid"
 HYBRID_PERSONALIZATION_ENABLED = true
+HYBRID_PERSONALIZATION_REGEX_PATHS = '["^/martech", "^/articles/.+"]'  # Array of regex patterns
+

@@ -58,13 +58,29 @@ const handleRequest = async (request, env, ctx) => {
   resp = await handleFpidCookie(request, resp, env.FPID_NAME);
 
   // Hybrid personalization 
-  if (env.HYBRID_PERSONALIZATION_ENABLED){
-    return await hybridPersonalization(req, resp)
+  if (env.HYBRID_PERSONALIZATION_ENABLED) {
+    // Check if the URL matches any of the regex patterns
+    if (shouldApplyHybridPersonalization(url.pathname, env.HYBRID_PERSONALIZATION_REGEX_PATHS)) {
+      // If URL matches, call hybridPersonalization method
+      resp = await hybridPersonalization(request, resp);
+    }
+
   }
 
   return resp;
 
 };
+
+// Function to check if the URL path matches any of the regex patterns
+function shouldApplyHybridPersonalization(pathname, regexArray) {
+  for (const regexPattern of regexArray) {
+    const regex = new RegExp(regexPattern);
+    if (regex.test(pathname)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 
 // Function to handle FPID cookie logic
@@ -135,23 +151,23 @@ const hybridPersonalization = async (req, resp) => {
     aepEdgeCookies,
     [])
 
-    console.log("----- filter payload.type = personalization:decisions and state:store")
-    console.log(JSON.stringify(aepEdgeResult.response))
+  console.log("----- filter payload.type = personalization:decisions and state:store")
+  console.log(JSON.stringify(aepEdgeResult.response))
 
-    const rewriter = new HTMLRewriter()
-        .on('body', {
-          element(element) {
-            element.append(`
+  const rewriter = new HTMLRewriter()
+    .on('body', {
+      element(element) {
+        element.append(`
               <script>
                 console.log('Injected script!');
                 ${aepEdgeResult.response.body}
               </script>
             `, { html: true });
-          }
-        });
+      }
+    });
 
-    // Return the modified response
-    return rewriter.transform(resp);
+  // Return the modified response
+  return rewriter.transform(resp);
 
 }
 
