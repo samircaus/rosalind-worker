@@ -55,26 +55,51 @@ const handleRequest = async (request, env, ctx) => {
   resp.headers.delete('x-robots-tag');
 
   // FPID
+  resp = await handleFpidCookie(request, resp, env.FPID_NAME);
 
-  const cookieHeader = request.headers.get('Cookie'); // Check request headers for existing cookies
-  
-  if (!cookieHeader || !cookieHeader.includes('fpid=')) {
-    // Generate new UUID v4 if fpid cookie is not present in the request
+  // Hybrid personalization 
+  if (env.HYBRID_PERSONALIZATION_ENABLED){
+    return await hybridPersonalization(req, resp)
+  }
+
+  return resp;
+
+};
+
+
+// Function to handle FPID cookie logic
+async function handleFpidCookie(request, response, fpidCookieName) {
+  const cookieHeader = request.headers.get('Cookie');
+
+  if (!cookieHeader || !cookieHeader.includes(`${fpidCookieName}=`)) {
+    // If fpid cookie is not present, generate a new one
+    const { v4: uuidv4 } = require('uuid');
     const newFpid = uuidv4();
 
-    // Set the new fpid cookie with an expiration time (e.g., 1 year)
+    // Set the new fpid cookie with a 1-year expiration time
     const expirationDate = new Date();
     expirationDate.setFullYear(expirationDate.getFullYear() + 1);
     const expires = expirationDate.toUTCString();
 
-    resp = new Response(resp.body, resp);
-    resp.headers.append('Set-Cookie', `fpid=${newFpid}; Expires=${expires}; Path=/; HttpOnly`);
+    response = new Response(response.body, response);
+    response.headers.append('Set-Cookie', `${fpidCookieName}=${newFpid}; Expires=${expires}; Path=/; HttpOnly; Secure`);
+  } else {
+    // If fpid cookie exists, extend its expiration by 1 year
+    const expirationDate = new Date();
+    expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+    const expires = expirationDate.toUTCString();
+
+    const cookies = cookieHeader.split(';').map(cookie => cookie.trim());
+    const fpidCookie = cookies.find(cookie => cookie.startsWith(`${fpidCookieName}=`));
+    const currentFpid = fpidCookie.split('=')[1];
+
+    response = new Response(response.body, response);
+    response.headers.append('Set-Cookie', `${fpidCookieName}=${currentFpid}; Expires=${expires}; Path=/; HttpOnly; Secure`);
   }
 
-  return await hybridPersonalization(req, resp)
 
-  // return resp;
-};
+  return response;
+}
 
 class ElementHandler {
   element(element) {
