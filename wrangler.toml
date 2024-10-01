@@ -10,3 +10,4 @@ crons = [ ]
 
 [vars]
 ORIGIN_HOSTNAME = "main--rosalind--samircaus.hlx.live"
+FPID_NAME = "fpid"  
