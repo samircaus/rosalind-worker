@@ -71,10 +71,19 @@ const handleRequest = async (request, env, ctx) => {
     resp.headers.append('Set-Cookie', `fpid=${newFpid}; Expires=${expires}; Path=/; HttpOnly`);
   }
 
-  await hybridPersonalization(req, resp)
+  return await hybridPersonalization(req, resp)
 
-  return resp;
+  // return resp;
 };
+
+class ElementHandler {
+  element(element) {
+    // An incoming element, such as `div`
+    console.log(`Incoming element: ${element.tagName}`);
+  }
+
+
+}
 
 const hybridPersonalization = async (req, resp) => {
   // measure how much this impacts total processing time
@@ -100,6 +109,24 @@ const hybridPersonalization = async (req, resp) => {
     identityMap,
     aepEdgeCookies,
     [])
+
+    console.log("----- filter payload.type = personalization:decisions and state:store")
+    console.log(JSON.stringify(aepEdgeResult.response))
+
+    const rewriter = new HTMLRewriter()
+        .on('body', {
+          element(element) {
+            element.append(`
+              <script>
+                console.log('Injected script!');
+                ${aepEdgeResult.response.body}
+              </script>
+            `, { html: true });
+          }
+        });
+
+    // Return the modified response
+    return rewriter.transform(resp);
 
 }
 

@@ -8,7 +8,7 @@
     "start": "wrangler dev"
   },
   "devDependencies": {
-    "wrangler": "^3.72.2"
+    "wrangler": "^3.78.2"
   },
   "dependencies": {
     "cookie": "^0.6.0",
