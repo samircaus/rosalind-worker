@@ -86,32 +86,27 @@ function shouldApplyHybridPersonalization(pathname, regexArray) {
 // Function to handle FPID cookie logic
 async function handleFpidCookie(request, response, fpidCookieName) {
   const cookieHeader = request.headers.get('Cookie');
-
+  let fpidValue;
+  
   if (!cookieHeader || !cookieHeader.includes(`${fpidCookieName}=`)) {
     // If fpid cookie is not present, generate a new one
     const { v4: uuidv4 } = require('uuid');
-    const newFpid = uuidv4();
-
-    // Set the new fpid cookie with a 1-year expiration time
-    const expirationDate = new Date();
-    expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-    const expires = expirationDate.toUTCString();
-
-    response = new Response(response.body, response);
-    response.headers.append('Set-Cookie', `${fpidCookieName}=${newFpid}; Expires=${expires}; Path=/; HttpOnly; Secure`);
+    fpidValue = uuidv4();
   } else {
-    // If fpid cookie exists, extend its expiration by 1 year
-    const expirationDate = new Date();
-    expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-    const expires = expirationDate.toUTCString();
-
+    // Extract the current fpid from the cookie
     const cookies = cookieHeader.split(';').map(cookie => cookie.trim());
     const fpidCookie = cookies.find(cookie => cookie.startsWith(`${fpidCookieName}=`));
-    const currentFpid = fpidCookie.split('=')[1];
-
-    response = new Response(response.body, response);
-    response.headers.append('Set-Cookie', `${fpidCookieName}=${currentFpid}; Expires=${expires}; Path=/; HttpOnly; Secure`);
+    fpidValue = fpidCookie.split('=')[1];
   }
+
+  // Set or extend the fpid cookie with a 1-year expiration time
+  const expirationDate = new Date();
+  expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+  const expires = expirationDate.toUTCString();
+
+  response = new Response(response.body, response);
+  response.headers.append('Set-Cookie', `${fpidCookieName}=${fpidValue}; Expires=${expires}; Path=/; HttpOnly; Secure`);
+
 
 
   return response;
